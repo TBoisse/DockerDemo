@@ -32,7 +32,9 @@ Avec `FROM` vous définissez votre base et avec `RUN` vous enrichissez la forme 
 
 ### CMD / ENTRYPOINT
 
-Ces mots clés sont présentés ensemble car leur différence est très subtil donc il est plus simple de les présenter d'un coup puis de comprendre plus tard quand est ce qu'il faut utiliser l'un ou l'autre. Ils s'utilisent tous les deux comme dernier mot clé d'un Dockerfile et ils définissent l'objectif d'un Dockerfile. Il n'est pas autorisé d'utiliser plusieurs de ces mots clés, si vous écrivez deux `CMD` dans un Dockerfile, uniquement le dernier sera utilisé.
+Ces mots clés sont présentés ensemble car leur différence est très subtil donc il est plus simple de les présenter d'un coup puis de comprendre plus tard quand est ce qu'il faut utiliser l'un ou l'autre. Ils s'utilisent tous les deux comme dernier mot clé d'un Dockerfile et ils définissent l'objectif d'un Dockerfile. Il n'est pas autorisé d'utiliser plusieurs d'un de ces mots clés, si vous écrivez deux `CMD` dans un Dockerfile, uniquement le dernier sera utilisé.
+
+Si les différences entre ces deux mots clés vous intéresse, une première est décrite dans la section [Contourner CMD](#contourner-cmd)
 
 ## Pratique
 
@@ -62,3 +64,65 @@ Vous devriez voir votre image. Super ! Essayons maintenant de lancer un conteneu
 docker run helloworld
 ```
 Normalement, vous devriez obtenir un log dans votre terminal.
+
+### Hello World ! 2
+
+Bon, l'exemple d'avant était sympa mais l'image est un peu vide. Essayons de complexifier un peu cette image. Dans l'exemple précedent, nous avions lancer le build de l'image depuis la root de ce projet. Nous allons essayer une nouvelle approche en entrant dans le dossier de ce deuxième projet :
+```bash
+cd HelloWorld2
+```
+Nous avons deux fichiers : `main.py` et `Dockerfile`. Le fichier python effectue un simple print. Le Dockerfile récupère l'image `python:3.12-alpine3.23` qui est une image qui contient directement une version python (dans notre cas 3.12) et se base sur la version 3.23 de la distribution Alpine. À la différence du dernier exemple, nous retrouvons le mot clé `COPY`. Ce dernier copie le fichier python et l'intégre à l'image. Nous pouvons build cette image :
+```bash
+docker build -t helloworld2 .
+docker run helloworld2
+```
+
+La commande `docker run` permet de mettre up un conteneur en se basant sur une image, cette utilisation est donc ponctuelle pour cette exemple car l'objectif associé à l'image ne demande pas de maintenir le conteneur up.
+
+### L'intérieur d'un Docker
+
+Si vous avez suivi les exemples dans l'ordre, vous devriez déjà être dans le dossier `HelloWorld2` sinon, effectuez cette commande :
+```bash
+cd HelloWorld2
+```
+Vous pouvez build l'image présente dans ce dossier :
+```bash
+docker build -t helloworld2 .
+```
+Lors de l'introduction, nous avions décrit un Docker comme capable d'exécuter un programme dans un environnement isolé. Nous allons essayer de rentrer à l'intérieur de cet environnement grâce à l'option `--interactive` (-i) qui permet de transmettre ce qui est écrit dans notre terminal au conteneur et à l'option `--tty` (-t) qui permet d'ouvrir un pseudo terminal qui récupère ce qui est envoyé grâce à -i. Le dernier mot de la commande est le terminal qui sera ouvert : sh pour les distributions légères en générale, et bash sinon.
+```bash
+docker run -it helloworld2 sh
+```
+Vous vous trouvez maintenant à l'intérieur du conteneur. Vous pouvez voir où vous vous trouver : 
+```bash
+ls
+```
+Vous devriez voir une liste de dossier ainsi que le fichier `main.py`. Vous pouvez essayer de l'utiliser : 
+```bash
+python main.py
+```
+Si tout s'est bien passé, vous avez obtenu le bon log ! Pour sortir du docker, la commande la plus répandue est `CTRL + D`.
+
+### Contourner CMD
+
+Dans l'explication de chaque mot clé, nous avions dit que `CMD` et `ENTRYPOINT` étaient très proches. Si CMD est utilisé seul, alors il contient toutes les informations pour réaliser l'objectif de l'image. Si ENTRYPOINT est utilisé seul, alors il contient toutes les informations pour réaliser l'objectif de l'image (oui c'est la même chose). Si ENTRYPOINT est présent et CMD est présent, alors CMD correspond aux arguments qui seront donnés à ENTRYPOINT. Par exemple : 
+```Dockerfile
+ENTRYPOINT ["python"]
+CMD ["main.py"]
+```
+Dans ce cas, CMD contient le nom du fichier python qui est donné à ENTRYPOINT. Dans ce cas, si nous devons utiliser qu'un seul des deux, lequel choisir ?
+
+Un élément de réponse est que CMD est très facilement remplacable dans le terminal. Si vous avez suivi tous les exemples, vous devriez être dans le dossier `HelloWorld2` et vous devriez avoir build l'image de ce dossier, sinon effectuez ces commande : 
+```bash
+cd HelloWorld2
+docker build -t helloworld2 .
+```
+Cette image ne contient pas d'ENTRYPOINT et ne contient qu'un seul CMD. Si vous appelez :
+```bash
+docker run helloworld2
+```
+Vous devriez obtenir le print de "Hello World". Cependant, vous pouvez outrepasser CMD en indiquant une commande après le nom de l'image : 
+```bash
+docker run helloworld2 ls /
+```
+Vous devriez voir apparaître tous les dossiers et fichiers présents à la root du conteneur. Si vous avez suivi tous les exemples, vous avez aussi dû remarquer que cette commande est équivalente à être rentré dans le conteneur et d'avoir effectuer la commande ls.
