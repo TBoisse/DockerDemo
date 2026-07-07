@@ -126,3 +126,29 @@ Vous devriez obtenir le print de "Hello World". Cependant, vous pouvez outrepass
 docker run helloworld2 ls /
 ```
 Vous devriez voir apparaître tous les dossiers et fichiers présents à la root du conteneur. Si vous avez suivi tous les exemples, vous avez aussi dû remarquer que cette commande est équivalente à être rentré dans le conteneur et d'avoir effectuer la commande ls.
+
+### Projet Python
+
+Petit spoiler avant de commencer cet exercice : vous n'obtiendrez pas les résultats de ce Dockerfile ici, vous devrez attendre l'exercice suivant. Avec cet exercice, nous avons enfin la possibilité de voir un projet Docker basique plutôt complet.
+
+Vous pouvez aller dans le dossier `PythonProject` afin de pouvoir jeter un oeil à tous les fichiers qui seront nécessaire pour construire le projet. L'objectif de ce projet est de générer une image avec n (entier prédifini) points choisis aléatoirement. L'image de base est `python:3.14-slim`, nous utilisons donc la version 3.14 de python sur une distribution Debian Trixie Slim. Nous retrouvons un dossier `src` qui définit une fonction pour générer n points aléatoirement et un fichier `main.py` qui est appelé par CMD du Dockerfile et qui s'occupe d'afficher ces n points. L'affichage de ces points nécessite la librairie `matplotlib`, c'est pour cela que nous avons défini un fichier `requirements.txt` et qui est installé grâce au mot clé `RUN` qui appelle `pip`.
+
+Vous pouvez construire cette image et la nommée `pythonproject`. Cependant, vous remarquerez que rien ne se produit. En tout cas, à première vue car nous allons voir qu'en réalité, il s'est bien passé quelque chose. Pour cela, rentrons dans le docker :
+```bash
+docker run -it pythonproject bash
+```
+Une première chose que nous pouvons remarquer est que le dossier dans lequel nous nous trouvons n'est plus `/` comme c'était le cas depuis le début des exemples. Maintenant, l'espace de travail se nomme `/app` et ceci a été défini grâce au mot clé `WORKDIR` dans le Dockerfile. Ceci est souvent une bonne pratique quand vous écrirez des Dockerfile. Vous pouvez effectuer la commande `ls` afin de voir la liste des fichiers présent dans l'espace de travail. Vous devriez voir 2 fichiers (un py et un txt) et un dossier src.
+
+Si vous effectuez la commande 
+```bash
+python main.py
+```
+puis que vous effectuez de nouveau la commande `ls` vous verrez qu'un nouveau fichier vient d'apparaître : `random_points.png`. Pourtant, si vous sortez du conteneur et que vous effectuez `ls` vous ne verrez pas cette image png. En effet, nous rappelons qu'un conteneur est sensé être isolé de votre machine ! Comment faire pour récupèrer cette image ???
+
+### Partage de volume
+
+Il est important d'avoir réaliser l'exercice précedent pour réaliser cet exercice. Vous devriez toujours être dans le dossier `PythonProject` et vous devriez avoir une image docker `pythonproject`. Le problème soulevé par le dernier exercice est que le conteneur génère une image png mais qu'elle ne se retrouve pas sur notre machine. Or nous en avons besoin. Nous introduisons le concept de `volume`. En Docker, un volume permet de relier un dossier de la machine hôte avec un dossier du conteneur. De cette manière, tous les fichiers créés, supprimées ou modifées dans le dossier du conteneur se retrouve dans le dossier de la machine hôte et inversement. Nous allons donc utiliser ce concept pour récupèrer notre image png grâce à l'option --volume (-v) de Docker qui attend le dossier hôte puis le dossier conteneur séparé par un `:` :
+```bash
+docker run -v .:/app pythonproject
+```
+Normalement, si vous faîtes `ls` vous verrez l'image png sur votre machine !
