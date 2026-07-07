@@ -153,6 +153,24 @@ docker run -v .:/app pythonproject
 ```
 Normalement, si vous faîtes `ls` vous verrez l'image png sur votre machine !
 
+### Projet Jupyter Notebook
+
+L'astuce pour réaliser cet exercice est de créer un Docker qui ouvre un serveur Jupyter et de faire un partage de volume entre le conteneur et la zone où vous stockez les notebooks. Essayons ça ensemble ! Tout d'abord, vous devez vous rendre dans le dossier `NotebookProject`. Vous y trouverez un `Dockerfile`, un `requirements.txt` et un dossier `notebooks`. C'est ce dernier dossier qui sera partagé en volume. Dans ce dossier, vous trouverez un notebook qui réalise exactement la même chose que dans [ProjetPython](#projet-python). Le Dockerfile installe `notebook` en plus des requirements et expose son port `8888`. Le mot clé CMD permet de créer un serveur notebook. Vous pouvez construire l'image et la nommée `notebook`. 
+
+Avec un peu d'intuition, il manque deux éléments à présent :
+- Le partage de volume
+- Connecter un port de localhost au port du conteneur
+Et c'est dans la commande Docker que tout se passe : 
+```bash
+docker run --rm -p 8888:8888 -v ./notebooks/:/app notebook
+```
+L'option `--rm` permet de supprimer le conteneur et ses volumes anonymes lorsqu'il s'arrête. L'option `--publish` (-p) permet de publier un port du conteneur pour l'host (votre machine) et  l'option `--volume` a déjà été détaillée dans l'exercice précédent.
+
+Pour utiliser le notebook, vous devez récupèrer l'url du serveur dans les logs du terminal. Cette url devrait ressembler à :
+```bash
+http://127.0.0.1:8888/
+``` 
+
 ## Conclusions
 
 Vous venez de finir ce tutoriel Docker. Il est loin d'être exhaustif et beaucoup d'autres fonctionnalités peuvent être abordés. La promesse de ce tutoriel est de vous permettre de comprendre un Dockerfile, de pouvoir le modifier pour l'adapter à vos besoins et de créer des Dockerfile simples.
