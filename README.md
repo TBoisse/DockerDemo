@@ -152,3 +152,7 @@ Il est important d'avoir réaliser l'exercice précedent pour réaliser cet exer
 docker run -v .:/app pythonproject
 ```
 Normalement, si vous faîtes `ls` vous verrez l'image png sur votre machine !
+
+## Conclusions
+
+Vous venez de finir ce tutoriel Docker. Il est loin d'être exhaustif et beaucoup d'autres fonctionnalités peuvent être abordés. La promesse de ce tutoriel est de vous permettre de comprendre un Dockerfile, de pouvoir le modifier pour l'adapter à vos besoins et de créer des Dockerfile simples.
