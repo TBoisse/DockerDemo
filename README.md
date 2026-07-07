@@ -53,7 +53,7 @@ Sauf que là, vous devriez ne rien voir. En effet, lorsque vous avez construit v
 ```bash
 docker build -t helloworld HelloWorld/
 ```
-Et maintenant, si vous rééssayer cette commande : 
+Et maintenant, si vous rééssayez cette commande : 
 ```bash
 docker images
 ```
